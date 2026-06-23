@@ -2,6 +2,22 @@
 
 This is a single-file Streamlit app (`streamlit_app.py`) for document question answering using OpenAI's GPT-3.5-turbo. See `README.md` for basic setup.
 
+### Global integration tools and connected agent
+
+**Global integration tools** are user-level MCP (Model Context Protocol) servers in `~/.cursor/mcp.json`. They are available in every project on your machine. **Project integration tools** live in [`.cursor/mcp.json`](.cursor/mcp.json) and are shared with the team when committed to git.
+
+A **connected agent** is an Agent session where MCP servers are installed, authenticated, and enabled. The agent can call those tools during tasks (with approval unless allowlisted). Project and global configs are merged; if the same server name exists in both, the project config wins.
+
+| Scope | Location | Use for |
+| --- | --- | --- |
+| Global | `~/.cursor/mcp.json` | Personal tools (e.g. GitHub, Notion) across all repos |
+| Project | `.cursor/mcp.json` | Team-shared tools for this repo |
+| Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Team/cloud runs; not your local `~/.cursor/mcp.json` |
+
+This repo includes a project-level Hugging Face MCP server so agents can search Hub models/datasets, fetch docs, and explore LLM tooling relevant to document QA. Replace `YOUR_HF_TOKEN` in `.cursor/mcp.json` locally (do not commit real tokens), or generate a ready-to-paste config at [huggingface.co/settings/mcp](https://huggingface.co/settings/mcp).
+
+To verify a connected agent sees project tools: open Agent chat, check **Available Tools**, or ask the agent to list MCP tools it can access.
+
 ### Running the app
 
 ```
