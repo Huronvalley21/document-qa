@@ -14,9 +14,18 @@ A **connected agent** is an Agent session where MCP servers are installed, authe
 | Project | `.cursor/mcp.json` | Team-shared tools for this repo |
 | Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Team/cloud runs; not your local `~/.cursor/mcp.json` |
 
-This repo includes a project-level Hugging Face MCP server so agents can search Hub models/datasets, fetch docs, and explore LLM tooling relevant to document QA. Replace `YOUR_HF_TOKEN` in `.cursor/mcp.json` locally (do not commit real tokens), or generate a ready-to-paste config at [huggingface.co/settings/mcp](https://huggingface.co/settings/mcp).
+This repo includes a project-level Hugging Face MCP server so agents can search Hub models/datasets, fetch docs, and explore LLM tooling relevant to document QA.
 
-To verify a connected agent sees project tools: open Agent chat, check **Available Tools**, or ask the agent to list MCP tools it can access.
+**Local setup (do not commit secrets):**
+
+1. Run `./scripts/setup-mcp.sh` (creates `.env` from [`.env.example`](.env.example)).
+2. Set `HF_TOKEN` in `.env` using a token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), or paste a config from [huggingface.co/settings/mcp](https://huggingface.co/settings/mcp).
+3. Reload Cursor and confirm **huggingface** appears under Settings → Tools & MCP.
+4. In Agent chat, check **Available Tools** or ask the agent to list MCP tools.
+
+[`.cursor/mcp.json`](.cursor/mcp.json) uses `${env:HF_TOKEN}` and loads `.env` via `envFile` so tokens stay out of git.
+
+**Cloud Agent setup:** Add `HF_TOKEN` as a Cloud Agent secret at [cursor.com/agents](https://cursor.com/agents), or use team MCP already configured there (e.g. Huggingface-skills).
 
 ### Running the app
 
