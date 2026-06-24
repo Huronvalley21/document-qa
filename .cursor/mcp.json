@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "huggingface": {
+      "url": "https://huggingface.co/mcp",
+      "envFile": "${workspaceFolder}/.env",
+      "headers": {
+        "Authorization": "Bearer ${env:HF_TOKEN}"
+      }
+    }
+  }
+}
