@@ -30,9 +30,10 @@ This repo includes a project-level Hugging Face MCP server so agents can search 
 ### Running the app
 
 ```
-streamlit run streamlit_app.py --server.headless true --server.port 8501
+python3 -m streamlit run streamlit_app.py --server.headless true --server.port 8501
 ```
 
+- `pip install -r requirements.txt` installs `streamlit` into `~/.local/bin`, which is not on `PATH` by default — invoke it as `python3 -m streamlit` to avoid a "command not found" error.
 - The app serves on port **8501**.
 - The `--server.headless true` flag is required in headless/cloud environments to suppress the browser-open prompt.
 - An **OpenAI API key** is required for question-answering functionality. It can be entered via the UI text input or stored in `.streamlit/secrets.toml` (gitignored).
