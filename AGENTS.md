@@ -25,6 +25,19 @@ This repo includes a project-level Hugging Face MCP server so agents can search 
 
 [`.cursor/mcp.json`](.cursor/mcp.json) uses `${env:HF_TOKEN}` and loads `.env` via `envFile` so tokens stay out of git.
 
+**What persists locally vs cloud:**
+
+| Item | Persists where | Notes |
+| --- | --- | --- |
+| Project [`.cursor/mcp.json`](.cursor/mcp.json) | Every clone (via git) | Shared config; no secrets |
+| Local `.env` (`HF_TOKEN`) | That machine only | Gitignored; recreate per clone with `./scripts/setup-mcp.sh` |
+| Global `~/.cursor/mcp.json` | That machine only | Use for tools you want in *all* local projects; not synced from Cloud Agent VMs |
+| Cloud / team MCP | [cursor.com/agents](https://cursor.com/agents) | Used by Cloud Agents; separate from your laptop’s `~/.cursor/mcp.json` |
+
+After you set `HF_TOKEN` once in `.env` (or your shell/env), the project MCP setup persists across Cursor restarts on that machine. It does **not** auto-sync to other machines — clone + run setup + set the token again there.
+
+**Optional — all projects on your laptop:** add Hugging Face to `~/.cursor/mcp.json` with `"Authorization": "Bearer ${env:HF_TOKEN}"`, and export `HF_TOKEN` in your shell profile or system environment so Cursor can read it at startup.
+
 **Cloud Agent setup:** Add `HF_TOKEN` as a Cloud Agent secret at [cursor.com/agents](https://cursor.com/agents), or use team MCP already configured there (e.g. Huggingface-skills).
 
 ### Running the app
