@@ -1,2 +1,10 @@
-streamlit
-openai
+# Core app
+streamlit>=1.64.0
+
+# Browser agent framework (pins openai~=2.26; brings playwright, langchain, etc.)
+browser-use>=0.13.10
+playwright>=1.63.0
+
+# Utilities
+python-dotenv>=1.1.0
+pydantic>=2.11.0

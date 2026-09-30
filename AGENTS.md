@@ -1,27 +1,117 @@
 ## Cursor Cloud specific instructions
 
-This is a single-file Streamlit app (`streamlit_app.py`) for document question answering using OpenAI's GPT-3.5-turbo. See `README.md` for basic setup.
+This repository is a Streamlit document Q&A app extended with **browser agent** and **computer-use agent (CUA)** capabilities.
+
+### Architecture overview
+
+| Component | File(s) | Purpose |
+|-----------|---------|---------|
+| Streamlit app | `streamlit_app.py` | Document Q&A via OpenAI GPT models |
+| Browser-Use agent demo | `scripts/browser_agent_demo.py` | Autonomous browser agent (headless Chromium) |
+| CUA demo (openai 2.x) | `scripts/cua_demo.py` | Computer-use-preview model controlling Playwright |
+| Agents SDK CUA demo | `scripts/agents_sdk_cua_demo.py` | OpenAI Agents SDK `ComputerTool` (separate venv) |
+| MCP setup | `scripts/setup-mcp.sh`, `.cursor/mcp.json` | Hugging Face MCP server for agent tooling |
+
+### Dependencies
+
+**Primary virtualenv** (`requirements.txt`):
+
+- `streamlit>=1.64.0` — web UI framework
+- `browser-use>=0.13.10` — browser agent framework (brings `openai==2.26.0`, `playwright`, `langchain`, Anthropic/Google/Groq clients)
+- `playwright>=1.63.0` — headless browser automation
+- `python-dotenv>=1.1.0` — `.env` file loading
+- `pydantic>=2.11.0` — data validation
+
+**Separate virtualenv** (`requirements-openai-agents.txt`):
+
+- `openai-agents>=0.22.3` — OpenAI Agents SDK with `ComputerTool`/CUA, `ShellTool`, `ApplyPatchTool`
+- Requires `openai>=3.0` which conflicts with `browser-use` (pins `openai==2.26.0`)
+
+Install the Agents SDK in a separate venv:
+```bash
+python -m venv .venv-agents && source .venv-agents/bin/activate
+pip install -r requirements-openai-agents.txt
+python -m playwright install chromium
+```
+
+### Running the app
+
+```bash
+streamlit run streamlit_app.py --server.headless true --server.port 8501
+```
+
+- The app serves on port **8501**.
+- The `--server.headless true` flag is required in headless/cloud environments.
+- An **OpenAI API key** is required for Q&A functionality (enter via UI or set in `.env`).
+
+### Running demos
+
+All demo scripts load keys from `.env` via `python-dotenv`. Copy `.env.example` to `.env` first:
+
+```bash
+cp .env.example .env   # then fill in your keys
+```
+
+**Browser-Use agent** (requires `OPENAI_API_KEY` for full agent; runs Playwright smoke test without):
+```bash
+python scripts/browser_agent_demo.py
+```
+
+**CUA demo** (requires `OPENAI_API_KEY` — uses `computer-use-preview` model):
+```bash
+python scripts/cua_demo.py
+```
+
+**Agents SDK CUA** (requires separate venv + `OPENAI_API_KEY`):
+```bash
+source .venv-agents/bin/activate
+python scripts/agents_sdk_cua_demo.py
+```
+
+### Browser-Use skills reference
+
+`browser-use` provides an `Agent` class that drives a headless Chromium browser:
+
+```python
+from browser_use import Agent, Browser, ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o-mini")
+browser = Browser(headless=True)
+agent = Agent(task="Find the top HN story", llm=llm, browser=browser)
+result = await agent.run()
+```
+
+Key classes:
+- `Agent` — orchestrates multi-step browser tasks
+- `Browser` — Playwright browser wrapper (accepts `headless`, `cdp_url`, `viewport`, etc. directly)
+- `ChatOpenAI`, `ChatAnthropic`, `ChatGoogle`, `ChatBrowserUse` — LLM adapters
+- `Tools` / `@tools.action` — custom tool registration for agents
+- `BrowserSession` — injected into custom tools for direct page access
+
+### CUA (Computer-Use Agent) skills reference
+
+The CUA pattern uses OpenAI's `computer-use-preview` model (or `gpt-5.6` in Agents SDK) to see screenshots and emit actions:
+
+1. Capture a screenshot → send as base64 image
+2. Model returns `computer_call` with actions (click, type, scroll, keypress)
+3. Execute actions in Playwright → capture new screenshot → loop
+
+Supported action types: `click`, `double_click`, `type`, `keypress`, `scroll`, `move`, `wait`, `drag`, `screenshot`.
 
 ### Global integration tools and connected agent
 
-**Global integration tools** are user-level MCP (Model Context Protocol) servers in `~/.cursor/mcp.json`. They are available in every project on your machine. **Project integration tools** live in [`.cursor/mcp.json`](.cursor/mcp.json) and are shared with the team when committed to git.
-
-A **connected agent** is an Agent session where MCP servers are installed, authenticated, and enabled. The agent can call those tools during tasks (with approval unless allowlisted). Project and global configs are merged; if the same server name exists in both, the project config wins.
+**Global integration tools** are user-level MCP servers in `~/.cursor/mcp.json`. **Project integration tools** live in [`.cursor/mcp.json`](.cursor/mcp.json).
 
 | Scope | Location | Use for |
-| --- | --- | --- |
+|-------|----------|---------|
 | Global | `~/.cursor/mcp.json` | Personal tools (e.g. GitHub, Notion) across all repos |
 | Project | `.cursor/mcp.json` | Team-shared tools for this repo |
-| Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Team/cloud runs; not your local `~/.cursor/mcp.json` |
+| Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Cloud runs; not your local `~/.cursor/mcp.json` |
 
-This repo includes a project-level Hugging Face MCP server so agents can search Hub models/datasets, fetch docs, and explore LLM tooling relevant to document QA.
-
-**Local setup (do not commit secrets):**
-
+**Local setup:**
 1. Run `./scripts/setup-mcp.sh` (creates `.env` from [`.env.example`](.env.example)).
-2. Set `HF_TOKEN` in `.env` using a token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), or paste a config from [huggingface.co/settings/mcp](https://huggingface.co/settings/mcp).
-3. Reload Cursor and confirm **huggingface** appears under Settings → Tools & MCP.
-4. In Agent chat, check **Available Tools** or ask the agent to list MCP tools.
+2. Set `HF_TOKEN` in `.env`.
+3. Reload Cursor and confirm **huggingface** appears under Settings -> Tools & MCP.
 
 [`.cursor/mcp.json`](.cursor/mcp.json) uses `${env:HF_TOKEN}` and loads `.env` via `envFile` so tokens stay out of git.
 
@@ -38,20 +128,10 @@ After you set `HF_TOKEN` once in `.env` (or your shell/env), the project MCP set
 
 **Optional — all projects on your laptop:** add Hugging Face to `~/.cursor/mcp.json` with `"Authorization": "Bearer ${env:HF_TOKEN}"`, and export `HF_TOKEN` in your shell profile or system environment so Cursor can read it at startup.
 
-**Cloud Agent setup:** Add `HF_TOKEN` as a Cloud Agent secret at [cursor.com/agents](https://cursor.com/agents), or use team MCP already configured there (e.g. Huggingface-skills).
-
-### Running the app
-
-```
-streamlit run streamlit_app.py --server.headless true --server.port 8501
-```
-
-- The app serves on port **8501**.
-- The `--server.headless true` flag is required in headless/cloud environments to suppress the browser-open prompt.
-- An **OpenAI API key** is required for question-answering functionality. It can be entered via the UI text input or stored in `.streamlit/secrets.toml` (gitignored).
+**Cloud Agent setup:** Add secrets (`HF_TOKEN`, `OPENAI_API_KEY`, etc.) at [cursor.com/agents](https://cursor.com/agents), or use team MCP already configured there (e.g. Huggingface-skills).
 
 ### Notes
 
-- There are no automated tests or linting configured in this repository.
-- No build step is required — the app runs directly from source.
-- No database or external services are needed beyond the OpenAI API.
+- No automated tests or linting are configured.
+- No build step required — all scripts run directly from source.
+- Playwright Chromium must be installed: `python -m playwright install chromium && python -m playwright install-deps chromium`.
