@@ -16,23 +16,32 @@ This repository is a Streamlit document Q&A app extended with **browser agent** 
 
 **Primary virtualenv** (`requirements.txt`):
 
-- `streamlit>=1.64.0` — web UI framework
-- `browser-use>=0.13.10` — browser agent framework (brings `openai==2.26.0`, `playwright`, `langchain`, Anthropic/Google/Groq clients)
+- `streamlit>=1.64.0` — web UI framework (latest on PyPI: 1.64.0)
+- `browser-use>=0.13.10` — browser agent framework (brings `openai==2.26.0`, `playwright`, Anthropic/Google/Groq clients)
 - `playwright>=1.63.0` — headless browser automation
-- `python-dotenv>=1.1.0` — `.env` file loading
-- `pydantic>=2.11.0` — data validation
+- `python-dotenv>=1.2.2` — `.env` file loading
+- `pydantic>=2.13.5` — data validation
 
 **Separate virtualenv** (`requirements-openai-agents.txt`):
 
 - `openai-agents>=0.22.3` — OpenAI Agents SDK with `ComputerTool`/CUA, `ShellTool`, `ApplyPatchTool`
-- Requires `openai>=3.0` which conflicts with `browser-use` (pins `openai==2.26.0`)
+- Requires `openai>=3.0` (agents venv currently resolves to `openai==3.22.1`) which conflicts with `browser-use` (pins `openai==2.26.0`)
 
-Install the Agents SDK in a separate venv:
+**Upgrade both venvs + Jules CLI:**
+
+```bash
+./scripts/upgrade-deps.sh
+```
+
+Or manually install the Agents SDK in a separate venv:
 ```bash
 python -m venv .venv-agents && source .venv-agents/bin/activate
-pip install -r requirements-openai-agents.txt
+pip install -U pip setuptools wheel
+pip install -U -r requirements-openai-agents.txt
 python -m playwright install chromium
 ```
+
+Do **not** upgrade `openai` in the primary venv past what `browser-use` allows — use `.venv-agents` for Agents SDK / openai 3.x.
 
 ### Running the app
 
