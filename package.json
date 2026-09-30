@@ -1,0 +1,19 @@
+{
+  "name": "document-qa",
+  "version": "1.0.0",
+  "description": "Node.js LLM SDKs (OpenAI + Anthropic) for the document-qa project.",
+  "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Huronvalley21/document-qa.git"
+  },
+  "homepage": "https://github.com/Huronvalley21/document-qa#readme",
+  "bugs": {
+    "url": "https://github.com/Huronvalley21/document-qa/issues"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
+    "openai": "^7.25.0"
+  }
+}
