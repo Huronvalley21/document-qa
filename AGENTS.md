@@ -115,6 +115,36 @@ Supported action types: `click`, `double_click`, `type`, `keypress`, `scroll`, `
 
 **Cloud Agent setup:** Add secrets (`HF_TOKEN`, `OPENAI_API_KEY`, etc.) at [cursor.com/agents](https://cursor.com/agents).
 
+### Jules coding assistant (Google)
+
+[Jules](https://jules.google) is Google’s asynchronous coding agent. Use the **Jules Tools** CLI to create/list/pull remote sessions from the terminal.
+
+**Install / update (this machine):**
+
+```bash
+./scripts/setup-jules.sh
+# or: npm install -g @google/jules@latest --prefix "$HOME/.local"
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+**Authenticate (interactive — required once per machine):**
+
+1. Connect GitHub at [jules.google](https://jules.google) and grant access to this repo.
+2. Run `jules login` (opens a browser; use `jules login --no-launch-browser` for manual code entry).
+3. Verify: `jules remote list --repo`
+
+**Common commands:**
+
+```bash
+jules version
+jules remote list --repo
+jules remote list --session
+jules new "add unit tests for streamlit_app" --repo Huronvalley21/document-qa
+jules remote pull --session <id> --apply
+```
+
+Cloud Agent VMs do not inherit your laptop’s Jules login. Re-run `./scripts/setup-jules.sh` and `jules login` (or use the [Jules web UI](https://jules.google) / [Jules API](https://developers.google.com/jules/api) with a key from Jules Settings) when working in a new environment.
+
 ### Notes
 
 - No automated tests or linting are configured.
