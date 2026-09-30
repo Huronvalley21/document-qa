@@ -115,6 +115,41 @@ Supported action types: `click`, `double_click`, `type`, `keypress`, `scroll`, `
 
 **Cloud Agent setup:** Add secrets (`HF_TOKEN`, `OPENAI_API_KEY`, etc.) at [cursor.com/agents](https://cursor.com/agents).
 
+### Cursor Agent CLI
+
+Local and CI workflows can use the same Agent as the editor via the [Cursor CLI](https://cursor.com/docs/cli/overview).
+
+**Install / update:**
+
+```bash
+./scripts/setup-cursor-cli.sh
+# or: curl https://cursor.com/install -fsS | bash
+export PATH="$HOME/.local/bin:$PATH"
+agent update
+agent --version
+```
+
+**Authenticate:** `agent login`, or set `CURSOR_API_KEY`.
+
+**Modes** (same as the editor):
+
+| Mode | How to start | Behavior |
+|------|--------------|----------|
+| Agent | `agent` (default) | Full tools — edit, shell, search |
+| Plan | `agent --plan` / `--mode=plan` / `/plan` | Design approach; clarifying questions; no coding until you agree |
+| Ask | `agent --mode=ask` / `/ask` | Read-only Q&A over the codebase |
+
+Interactive tips: `Shift+Tab` rotates modes; `@` attaches files; `/summarize` frees context; prepend `&` to hand off to [Cloud Agent](https://cursor.com/agents); `-w` / `--worktree` edits in an isolated Git worktree under `~/.cursor/worktrees/`.
+
+**Non-interactive / scripts:**
+
+```bash
+agent -p "summarize streamlit_app.py"
+agent -p --output-format json "list MCP servers configured for this repo"
+```
+
+The CLI loads project [`.cursor/mcp.json`](.cursor/mcp.json), [`.cursor/rules`](.cursor/rules) (if present), and this `AGENTS.md` the same way the editor does.
+
 ### Notes
 
 - No automated tests or linting are configured.
