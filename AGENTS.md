@@ -100,20 +100,35 @@ Supported action types: `click`, `double_click`, `type`, `keypress`, `scroll`, `
 
 ### Global integration tools and connected agent
 
-**Global integration tools** are user-level MCP servers in `~/.cursor/mcp.json`. **Project integration tools** live in `.cursor/mcp.json`.
+**Global integration tools** are user-level MCP servers in `~/.cursor/mcp.json`. **Project integration tools** live in [`.cursor/mcp.json`](.cursor/mcp.json).
 
 | Scope | Location | Use for |
 |-------|----------|---------|
 | Global | `~/.cursor/mcp.json` | Personal tools (e.g. GitHub, Notion) across all repos |
 | Project | `.cursor/mcp.json` | Team-shared tools for this repo |
-| Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Cloud runs |
+| Cloud Agent | [cursor.com/agents](https://cursor.com/agents) MCP dropdown | Cloud runs; not your local `~/.cursor/mcp.json` |
 
 **Local setup:**
-1. Run `./scripts/setup-mcp.sh` (creates `.env` from `.env.example`).
+1. Run `./scripts/setup-mcp.sh` (creates `.env` from [`.env.example`](.env.example)).
 2. Set `HF_TOKEN` in `.env`.
 3. Reload Cursor and confirm **huggingface** appears under Settings -> Tools & MCP.
 
-**Cloud Agent setup:** Add secrets (`HF_TOKEN`, `OPENAI_API_KEY`, etc.) at [cursor.com/agents](https://cursor.com/agents).
+[`.cursor/mcp.json`](.cursor/mcp.json) uses `${env:HF_TOKEN}` and loads `.env` via `envFile` so tokens stay out of git.
+
+**What persists locally vs cloud:**
+
+| Item | Persists where | Notes |
+| --- | --- | --- |
+| Project [`.cursor/mcp.json`](.cursor/mcp.json) | Every clone (via git) | Shared config; no secrets |
+| Local `.env` (`HF_TOKEN`) | That machine only | Gitignored; recreate per clone with `./scripts/setup-mcp.sh` |
+| Global `~/.cursor/mcp.json` | That machine only | Use for tools you want in *all* local projects; not synced from Cloud Agent VMs |
+| Cloud / team MCP | [cursor.com/agents](https://cursor.com/agents) | Used by Cloud Agents; separate from your laptop’s `~/.cursor/mcp.json` |
+
+After you set `HF_TOKEN` once in `.env` (or your shell/env), the project MCP setup persists across Cursor restarts on that machine. It does **not** auto-sync to other machines — clone + run setup + set the token again there.
+
+**Optional — all projects on your laptop:** add Hugging Face to `~/.cursor/mcp.json` with `"Authorization": "Bearer ${env:HF_TOKEN}"`, and export `HF_TOKEN` in your shell profile or system environment so Cursor can read it at startup.
+
+**Cloud Agent setup:** Add secrets (`HF_TOKEN`, `OPENAI_API_KEY`, etc.) at [cursor.com/agents](https://cursor.com/agents), or use team MCP already configured there (e.g. Huggingface-skills).
 
 ### Notes
 
